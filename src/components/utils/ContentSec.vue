@@ -2,6 +2,7 @@
 import { storeToRefs } from 'pinia';
 import { useMainStore } from '@/stores/mainStore';
 import Mediciones from '../mediciones/Mediciones.vue';
+import SetAlertas from '../alertas/SetAlertas.vue';
 
 const mainStore = useMainStore();
 
@@ -11,10 +12,8 @@ const { historyOption } = storeToRefs(mainStore)
 <template>
     <main>
         <Mediciones v-if="historyOption === 'Default'" />
+        <SetAlertas v-else-if="historyOption === 'Alertas'" />
 
-        <template v-else-if="historyOption === 'Alertas'">
-
-        </template>
         <template v-else-if="historyOption === 'Metricas'">
 
         </template>
