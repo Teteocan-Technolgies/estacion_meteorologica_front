@@ -8,6 +8,7 @@ Chart.register(...registerables);
 const temperatura = ref(null);
 const humedad = ref(null);
 
+
 const lastTemperature = ref(null);
 const lastHumidity = ref(null);
 
@@ -36,6 +37,7 @@ const updateTemperature = () => {
     const newTemp = Math.floor(Math.random() * 10) + 18;
     temperatureChart.data.datasets[0].data.push(newTemp);
     lastTemperature.value = newTemp;
+
 
     if (temperatureChart.data.labels.length > 10) {
         temperatureChart.data.labels.shift();
