@@ -31,4 +31,10 @@ a {
 body {
   margin: 0;
 }
+
+button {
+  border: 0;
+  background-color: transparent;
+  cursor: pointer;
+}
 </style>

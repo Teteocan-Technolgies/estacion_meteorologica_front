@@ -167,12 +167,16 @@ onBeforeUnmount(() => {
     grid-template-columns: repeat(2, 1fr);
     margin: 0 auto;
 
-    padding: 30px;
-    width: min(100%, 1440px);
-    gap: 20px;
+    padding: 1.875rem;
+    width: min(100%, 90rem);
+    gap: 1.25rem;
 }
 
 header {
     text-align: center;
+}
+
+canvas {
+    width: 100% !important;
 }
 </style>

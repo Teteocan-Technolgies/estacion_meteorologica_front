@@ -6,7 +6,7 @@
 </template>
 <style scoped>
 header {
-    padding: 5px 10px;
+    padding: .3125rem .625rem;
     text-align: center;
 }
 </style>

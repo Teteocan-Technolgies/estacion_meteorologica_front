@@ -16,6 +16,7 @@ import ContentSec from '@/components/utils/ContentSec.vue'
 .container {
   display: grid;
   grid-template-columns: auto 1fr;
+  grid-template-rows: auto 1fr;
   grid-auto-rows: max-content;
   min-height: 100lvh;
 }
