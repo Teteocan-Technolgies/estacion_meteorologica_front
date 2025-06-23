@@ -49,13 +49,13 @@ fieldset {
     display: grid;
     justify-items: start;
     
-    gap: 10px;
+    gap: .625rem;
 }
 
 input {
-    height: 30px;
-    padding: 0 15px;
-    border-radius: 5px;
+    height: 1.875rem;
+    padding: 0 .9375rem;
+    border-radius: .3125rem;
     width: 100%;
 }
 
@@ -63,9 +63,9 @@ button {
     grid-column: -1 / -2;
     justify-self: end;
 
-    height: 30px;
-    width: min(100%, 180px);
-    border: 1px solid #000;
-    border-radius: 60px;
+    height: 1.875rem;
+    width: min(100%, 11.25rem);
+    border: .0625rem solid #000;
+    border-radius: 3.75rem;
 }
 </style>
