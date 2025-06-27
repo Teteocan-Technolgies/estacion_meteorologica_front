@@ -1,5 +1,18 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { useAlertasStore } from '@/stores/alertas';
+
+const alertasStore = useAlertasStore();
+const data = computed(() => alertasStore.dataAlt);
+
+const getInfo = async () => {
+    await alertasStore.getInfoAlt('anomalias');
+    for (let index = 0; index < data.value.length; index++) {
+        info.value[index].warning = data.value[index].warning
+        info.value[index].danger = data.value[index].danger
+    }
+}
+
 const info = ref([
     {
         legend: 'Temperatura',
@@ -27,17 +40,58 @@ const info = ref([
     },
 ])
 
-const submitData = () => {
+const submitData = async () => {
     const keys = ["temperatura", "humedad", "aire", "luxes"];
-    const data = {};
+    const infoVal = {};
+    const original = {};
 
-    for (let index = 0; index < info.value.length; index++) {
-        data[keys[index]] = { warning: info.value[index].warning, danger: info.value[index].danger };
+    // Rellenar infoVal y original con datos actuales y nuevos
+    for (let index = 0; index < keys.length; index++) {
+        const key = keys[index];
+        infoVal[key] = {
+            warning: info.value[index].warning,
+            danger: info.value[index].danger
+        };
+        original[data.value[index].variable] = {
+            warning: data.value[index].warning,
+            danger: data.value[index].danger
+        };
     }
 
-    console.log("data")
-    console.log(data)
-}
+    const toUpdate = [];
+    for (const key of keys) {
+        const originalVal = original[key];
+        const newVal = infoVal[key];
+
+        if (
+            originalVal?.warning !== newVal?.warning ||
+            originalVal?.danger !== newVal?.danger
+        ) {
+            toUpdate.push({ [key]: newVal });
+        }
+    }
+
+    const promiseArr = [];
+    for (const element of toUpdate) {
+        const key = Object.keys(element)[0];
+        const payload = {
+            option: `anomalias/${key}`,
+            item: element[key]
+        };
+
+
+        const responsePromise = alertasStore.editInfoAlt(payload);
+        promiseArr.push(responsePromise);
+    }
+
+    await Promise.all(promiseArr);
+    await getInfo()
+};
+
+
+onMounted(() => {
+    getInfo()
+})
 
 </script>
 <template>
