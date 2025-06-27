@@ -1,13 +1,13 @@
 <script setup>
 import { Chart, registerables } from 'chart.js';
 import { onMounted, onBeforeUnmount, ref } from 'vue';
+import { useDatosStore } from '@/stores/datos';
 import dayjs from 'dayjs';
 
 Chart.register(...registerables);
-
+const {data, getInfoDts} = useDatosStore();
 const temperatura = ref(null);
 const humedad = ref(null);
-
 
 const lastTemperature = ref(null);
 const lastHumidity = ref(null);
@@ -117,7 +117,8 @@ const setHumidity = () => {
     chartInstanceHumidity = new Chart(ctx, humidityChart);
 };
 
-onMounted(() => {
+onMounted(async () => {
+await getInfoDts("humedad_temp/one")
     getTime();
     setTemperature();
     setHumidity();
@@ -143,6 +144,8 @@ onBeforeUnmount(() => {
 
 </script>
 <template>
+    <pre>{{ data }}</pre> <!-- esto sí lo muestra como JSON -->
+
     <div class="container">
         <article>
             <header>
