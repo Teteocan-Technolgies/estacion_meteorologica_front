@@ -10,8 +10,11 @@ export default defineConfig({
     vue(),
     vueDevTools(),
   ],
-  server:{
+  server: {
     port: 8080
+  },
+  preview: {
+    port: 8080,
   },
   resolve: {
     alias: {
