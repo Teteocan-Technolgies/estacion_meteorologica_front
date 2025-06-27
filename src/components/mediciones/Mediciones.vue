@@ -1,23 +1,49 @@
 <script setup>
 import { Chart, registerables } from 'chart.js';
-import { onMounted, onBeforeUnmount, ref } from 'vue';
+import { onMounted, onBeforeUnmount, ref, computed, watch } from 'vue';
 import { useDatosStore } from '@/stores/datos';
+import { useAlertasStore } from '@/stores/alertas';
 import dayjs from 'dayjs';
 
 Chart.register(...registerables);
-const {data, getInfoDts} = useDatosStore();
+
+const datosStore = useDatosStore()
+const data = computed(() => datosStore.dataDts);
+
+const alertaStore = useAlertasStore();
+const alertas = computed(() => {
+    const valor = Array.isArray(alertaStore.dataAlt) ? alertaStore.dataAlt : [];
+
+    const result = {};
+
+    for (let index = 0; index < valor.length; index++) {
+        result[valor[index].variable] = {
+            warning: valor[index].warning,
+            danger: valor[index].danger,
+        }
+    }
+
+    return result;
+});
+
 const temperatura = ref(null);
 const humedad = ref(null);
 
 const lastTemperature = ref(null);
 const lastHumidity = ref(null);
 
+const controlParams = ref({
+    temperatura: {},
+    humedad: {},
+})
+
 let chartInstanceTemperature = null;
 let chartInstanceHumidity = null;
 
 let intervalId = null;
 
-const getTime = () => {
+const getTime = async () => {
+    await datosStore.getInfoDts("humedad_temp/one")
     updateTemperature();
     updateHumidity();
 
@@ -34,7 +60,7 @@ const updateTemperature = () => {
     const time = dayjs().format('HH:mm');
     temperatureChart.data.labels.push(time);
 
-    const newTemp = Math.floor(Math.random() * 10) + 18;
+    const newTemp = data.value.Temperatura;
     temperatureChart.data.datasets[0].data.push(newTemp);
     lastTemperature.value = newTemp;
 
@@ -49,7 +75,7 @@ const updateHumidity = () => {
     const time = dayjs().format('HH:mm');
     humidityChart.data.labels.push(time);
 
-    const newHumidity = Math.floor(Math.random() * 10) + 20;
+    const newHumidity = data.value.Humedad;
     humidityChart.data.datasets[0].data.push(newHumidity);
     lastHumidity.value = newHumidity;
 
@@ -117,8 +143,35 @@ const setHumidity = () => {
     chartInstanceHumidity = new Chart(ctx, humidityChart);
 };
 
+watch(lastTemperature, (newVal) => {
+    const item = alertas.value.temperatura;
+    if (!item) return;
+
+    if (newVal > item.danger) {
+        controlParams.value.temperatura = { color: '#F32013', message: 'Peligro' };
+    } else if (newVal > item.warning) {
+        controlParams.value.temperatura = { color: '#F0D500', message: 'Advertencia' };
+    } else {
+        controlParams.value.temperatura = { color: '#5CB85C', message: 'Estable' };
+    }
+});
+
+watch(lastHumidity, (newVal) => {
+    const item = alertas.value.humedad;
+    if (!item) return;
+
+    if (newVal > item.danger) {
+        controlParams.value.humedad = { color: '#F32013', message: 'Peligro' };
+    } else if (newVal > item.warning) {
+        controlParams.value.humedad = { color: '#F0D500', message: 'Advertencia' };
+    } else {
+        controlParams.value.humedad = { color: '#5CB85C', message: 'Estable' };
+    }
+});
+
+
 onMounted(async () => {
-await getInfoDts("humedad_temp/one")
+    await alertaStore.getInfoAlt('anomalias');
     getTime();
     setTemperature();
     setHumidity();
@@ -141,11 +194,9 @@ onBeforeUnmount(() => {
         clearInterval(intervalId);
     }
 });
-
 </script>
-<template>
-    <pre>{{ data }}</pre> <!-- esto sí lo muestra como JSON -->
 
+<template>
     <div class="container">
         <article>
             <header>
@@ -154,7 +205,11 @@ onBeforeUnmount(() => {
 
             <canvas ref="temperatura"></canvas>
 
-            <p>Última medición: {{ lastTemperature }} °C</p>
+            <p>Última medición: {{ lastTemperature }} °C - <span
+                    :style="{ '--color': controlParams.temperatura.color }">
+                    {{ controlParams.temperatura.message }}
+                </span>
+            </p>
         </article>
 
         <article>
@@ -164,7 +219,9 @@ onBeforeUnmount(() => {
 
             <canvas ref="humedad"></canvas>
 
-            <p>Última medición: {{ lastHumidity }} %</p>
+            <p>Última medición: {{ lastHumidity }} % - <span :style="{ '--color': controlParams.humedad.color }">
+                    {{ controlParams.humedad.message }}
+                </span></p>
         </article>
     </div>
 </template>
@@ -185,5 +242,9 @@ header {
 
 canvas {
     width: 100% !important;
+}
+
+p span {
+    color: var(--color)
 }
 </style>

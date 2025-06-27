@@ -1,8 +1,10 @@
 <script setup>
 import { ref } from 'vue';
-import dayjs from 'dayjs';
+import { useDatosStore } from '@/stores/datos';
+import * as XLSX from 'xlsx';
 
-const yesterday = ref(dayjs().subtract(1, 'day').format('YYYY-MM-DD'));
+const datosStore = useDatosStore();
+
 const daysData = ref(
     {
         from: '',
@@ -10,24 +12,44 @@ const daysData = ref(
     }
 );
 
-const submitData = () => {
-    console.log("daysData.value")
-    console.log(daysData.value)
+const submitData = async () => {
+    const response = await datosStore.addInfoDts({
+        option: 'humedad_temp/range',
+        item: daysData.value
+    })
+    console.log("response")
+    console.log(response)
+    if (Array.isArray(response?.data && response?.data.length > 0)) exportToExcel(response.data);
+
 }
+
+const exportToExcel = (data) => {
+    const cleaned = data.map(item => ({
+        Fecha: item.Fecha,
+        Temperatura: item.Temperatura,
+        Humedad: item.Humedad
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(cleaned);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datos");
+
+    XLSX.writeFile(workbook, "datos_climaticos.xlsx");
+};
 
 </script>
 <template>
     <form @submit.prevent="submitData">
         <fieldset>
             <label for="from">Desde:</label>
-            <input type="date" id="from" :max="daysData.to ? daysData.to : yesterday" v-model="daysData.from">
+            <input type="date" id="from" min="2025-06-24" max="2025-06-26" v-model="daysData.from">
         </fieldset>
         <fieldset>
             <label for="to-day">Hasta:</label>
-            <input type="date" id="to-day" :max="yesterday" v-model="daysData.to" :min="daysData.from">
+            <input type="date" id="to-day" min="2025-06-24" max="2025-06-26" v-model="daysData.to">
         </fieldset>
 
-        <button type="submit">Descargar csv</button>
+        <button type="submit">Descargar excel</button>
     </form>
 </template>
 <style scoped>
@@ -48,7 +70,7 @@ fieldset {
     border: 0;
     display: grid;
     justify-items: start;
-    
+
     gap: .625rem;
 }
 
